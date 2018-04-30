@@ -1,0 +1,3 @@
+[submodule "src/devicehive-logger"]
+	path = src/devicehive-logger
+	url = git@github.com:cmodk/devicehive-logger.git
