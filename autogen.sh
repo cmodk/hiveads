@@ -1,6 +1,5 @@
 #!/bin/bash
 cur_dir=`pwd`
-./generate_resources.sh
 make clean
 make distclean
 touch NEWS README AUTHORS ChangeLog compile
