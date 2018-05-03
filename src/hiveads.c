@@ -167,7 +167,7 @@ int main(int argc , char *argv[])
 		timestamp=getTimestampMs(NULL);
 
 
-		printf("Server reply(%d) : %s\n", retval,server_reply);
+		debug_printf("Server reply(%d) : %s\n", retval,server_reply);
 		num_ads_data=tokenize(server_reply,&ads_data,',');
 		debug_printf("Num ads data: %d\n",num_ads_data);
 		for(i=0;i<num_ads_data;i++){
@@ -180,7 +180,7 @@ int main(int argc , char *argv[])
 				}else{
 					ads_offset=i;
 					sprintf(guid,"%s",ads_data[ads_offset+4]);
-					printf("Found %s at %d\n",guid,ads_offset);
+					debug_printf("Found %s at %d\n",guid,ads_offset);
 
 					aircraft_known=0;
 					for(j=0;j<num_aircrafts;j++){

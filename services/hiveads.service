@@ -1,0 +1,13 @@
+[Unit]
+Description=ADS-B interface for AECloud
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/local/bin/hiveads 
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+

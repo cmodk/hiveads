@@ -1,3 +1,6 @@
 [submodule "src/devicehive-logger"]
 	path = src/devicehive-logger
 	url = git@github.com:cmodk/devicehive-logger.git
+[submodule "src/dump1090"]
+	path = src/dump1090
+	url = https://github.com/antirez/dump1090.git

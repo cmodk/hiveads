@@ -1,0 +1,8 @@
+Package: hiveads
+Version: 1.0-1
+Section: base
+Priority: optional
+Architecture: armhf
+Depends: 
+Maintainer: Casper Mogensen <casper.mogense@gmail.com>
+Description: ADS-B interface for AECloud
