@@ -4,7 +4,10 @@ Description=ADS-B interface for AECloud
 [Service]
 Type=simple
 User=root
-ExecStart=/usr/local/bin/dump1090d --net --metric --aggressive
+WorkingDirectory=/usr/local/share/dump1090
+ExecStart=/usr/local/bin/dump1090d --net --metric --aggressive 
+StandardOutput=null
+StandardError=null
 Restart=always
 RestartSec=10
 
