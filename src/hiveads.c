@@ -49,7 +49,7 @@ ads_data_t stream_map[22]={
 	{"",ADS_UNKNOWN},
 	{"",ADS_UNKNOWN},
 	{"",ADS_UNKNOWN},
-	{"",ADS_UNKNOWN},
+	{"flight.number",ADS_STRING},
 	{"flight.altitude",ADS_FLOAT},
 	{"flight.speed",ADS_FLOAT},
 	{"flight.groundtrack",ADS_FLOAT},
