@@ -9,11 +9,12 @@
 #include<stdlib.h>
 #include <data_logger.h>
 #include <devicehive.h>
+#include <debug.h>
 
-#define debug_printf
 #define ADS_REPLY_MAX (1024*1024)
 
 int do_run;
+int debug=0;
 int dlmq;
 int dhmq;
 
