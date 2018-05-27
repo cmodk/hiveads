@@ -25,12 +25,17 @@ typedef struct {
 
 typedef enum{
 	ADS_UNKNOWN,
-	ADS_FLOAT
+	ADS_FLOAT,
+  ADS_STRING
 }ads_data_type_t;
 
 typedef struct{
 	char *stream;
 	ads_data_type_t type;
+
+  char value_str[1024];
+  double value;
+
 }ads_data_t;
 
 ads_data_t stream_map[22]={
@@ -101,6 +106,26 @@ int send_double_value(char *icao_number, char *stream, long long timestamp, char
 	return log_double(dlmq, device_name,stream,timestamp,value);
 
 }
+
+int send_string_value(char *icao_number, char *stream, long long timestamp, char *value_str){
+	char device_name[1024];
+
+	if(icao_number==NULL || strlen(icao_number)==0){
+		debug_printf("Missing icao_number\n");
+		return -1;
+	}
+
+	if(value_str==NULL || strlen(value_str)==0){
+		debug_printf("Missing value string\n");
+		return -1;
+  }
+	
+	sprintf(device_name,"ICAO%s",icao_number);
+
+  return log_string(dlmq,device_name,stream,timestamp,value_str);
+
+}
+
 
 int device_register(char *guid) {
 	dhmq_device_register(dhmq,guid);
@@ -215,6 +240,17 @@ int main(int argc , char *argv[])
 						case ADS_FLOAT:
 							send_double_value(guid,stream_map[j].stream,timestamp,ads_data[j]);
 							break;
+            case ADS_STRING:
+              if(ads_data[j]!=NULL && strlen(ads_data[j])!=0) {
+                printf("%s -> %s -> %s\n",guid, stream_map[j].stream, ads_data[j]);
+                if(strcmp(stream_map[j].value_str,ads_data[j])==0){
+                  print_info("Ignoring.. already sent\n");
+                }else{
+                  send_string_value(guid, stream_map[j].stream, timestamp, ads_data[j]);
+                  sprintf(stream_map[j].value_str,"%s",ads_data[j]);
+                }
+              }
+              break;
 					}
 				}
 
