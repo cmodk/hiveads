@@ -1,5 +1,6 @@
 [Unit]
 Description=ADS-B interface for AECloud
+After=dump1090.service dehivehived.service
 
 [Service]
 Type=simple
