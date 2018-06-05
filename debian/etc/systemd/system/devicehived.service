@@ -1,0 +1,14 @@
+[Unit]
+Description=Devicehive interface for AECloud
+After=network.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/local/bin/devicehived
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+

@@ -1,0 +1,13 @@
+[Unit]
+Description=Datalogger for AECloud
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/local/bin/data_logger
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+

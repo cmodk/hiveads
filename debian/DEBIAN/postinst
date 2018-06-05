@@ -1,0 +1,13 @@
+#!/bin/bash
+
+APPS=(
+hiveads
+dump1090
+devicehived
+data_logger
+)
+
+for app in "${APPS[@]}"; do 
+	systemctl enable $app
+	systemctl restart $app
+done

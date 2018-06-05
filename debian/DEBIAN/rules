@@ -1,0 +1,10 @@
+#!/usr/bin/make -f
+
+%:
+  dh $@ --with systemd
+
+override_dh_installinit:
+  dh_installinit --name=hiveads -- defaults
+  dh_installinit --name=dump1090 -- defaults
+  dh_installinit --name=data_logger -- defaults
+  dh_installinit --name=devicehived -- defaults
