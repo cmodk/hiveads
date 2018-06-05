@@ -131,6 +131,19 @@ int device_register(char *guid) {
 	dhmq_device_register(dhmq,guid);
 }
 
+void trim_string(char *str, char *trimmed) {
+  int i;
+
+  memset(trimmed,0,strlen(str)+1);
+
+  for(i=0;i<strlen;i++){
+    if(str[i]==' '){
+      return;
+    }
+    trimmed[i]=str[i];
+  }
+}
+
 int main(int argc , char *argv[])
 {
 	aircraft_t known_aircrafts[1000];
@@ -143,6 +156,7 @@ int main(int argc , char *argv[])
 	char guid[1024];
 	int ads_offset=0;
 	long long timestamp;
+  char trimmed[1024];
 
 	dlmq = data_logger_mq_init();
 	if(dlmq==-1){
@@ -241,13 +255,17 @@ int main(int argc , char *argv[])
 							send_double_value(guid,stream_map[j].stream,timestamp,ads_data[j]);
 							break;
             case ADS_STRING:
-              if(ads_data[j]!=NULL && strlen(ads_data[j])!=0) {
-                printf("%s -> %s -> %s\n",guid, stream_map[j].stream, ads_data[j]);
-                if(strcmp(stream_map[j].value_str,ads_data[j])==0){
+              if(ads_data[i]==NULL)
+                continue;
+
+              trim_string(ads_data[j],trimmed);
+              if(strlen(trimmed)!=0) {
+                printf("%s -> %s -> '%s'\n",guid, stream_map[j].stream, trimmed);
+                if(strcmp(stream_map[j].value_str,trimmed)==0){
                   print_info("Ignoring.. already sent\n");
                 }else{
-                  send_string_value(guid, stream_map[j].stream, timestamp, ads_data[j]);
-                  sprintf(stream_map[j].value_str,"%s",ads_data[j]);
+                  send_string_value(guid, stream_map[j].stream, timestamp, trimmed);
+                  sprintf(stream_map[j].value_str,"%s",trimmed);
                 }
               }
               break;
