@@ -30,5 +30,6 @@ git add version.sh
 git commit -m "Generated release $MAJOR.$MINOR.$BUILD_NUMBER"
 git tag V$MAJOR.$MINOR.$BUILD_NUMBER
 git push --tags
+git push
 
 
