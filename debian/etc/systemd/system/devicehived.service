@@ -5,7 +5,7 @@ After=network.target
 [Service]
 Type=simple
 User=root
-ExecStart=/usr/local/bin/devicehived
+ExecStart=/usr/bin/devicehived
 Restart=always
 RestartSec=10
 

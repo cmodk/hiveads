@@ -5,7 +5,7 @@ After=dump1090.service dehivehived.service data_logger.service
 [Service]
 Type=simple
 User=root
-ExecStart=/usr/local/bin/hiveads 
+ExecStart=/usr/bin/hiveads 
 Restart=always
 RestartSec=10
 
