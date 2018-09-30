@@ -21,7 +21,7 @@ AC_CHECK_HEADERS([stdlib.h unistd.h])
 common_CFLAGS="\
 	-I../src \
 	-I../src/devicehive-logger/src \
-	-Wall"
+	-Wall -g"
 AC_SUBST([common_CFLAGS])
 common_LDFLAGS="-lrt -lsqlite3 -lcurl -lm -lpthread"
 AC_SUBST([common_LDFLAGS])
