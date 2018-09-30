@@ -157,6 +157,7 @@ int main(int argc , char *argv[])
 	int ads_offset=0;
 	long long timestamp;
   char trimmed[1024];
+  int read_retry_count=0;
 
 	dlmq = data_logger_mq_init();
 	if(dlmq==-1){
@@ -202,8 +203,13 @@ int main(int argc , char *argv[])
 			printf("recv failed: %d\n",retval);
 			do_run=0;
 		}else if(retval==0){
+      if(++read_retry_count==10) {
+        printf("Error: Read return 0 %d times, restarting application\n",read_retry_count);
+        do_run=0;
+      }
 			continue;
 		}
+    read_retry_count=0;
 		timestamp=getTimestampMs(NULL);
 
 
