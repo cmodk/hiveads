@@ -27,8 +27,9 @@ echo "MINOR=$MINOR" >> version.sh
 echo "BUILD_NUMBER=$BUILD_NUMBER" >> version.sh
 
 git add version.sh
-git commit -m "Generated release $MAJOR-$MINOR-$BUILD_NUMBER"
-git tag V$MAJOR-$MINOR-$BUILD_NUMBER
+git commit -m "Generated release $MAJOR.$MINOR.$BUILD_NUMBER"
+git tag V$MAJOR.$MINOR.$BUILD_NUMBER
 git push --tags
+git push
 
 

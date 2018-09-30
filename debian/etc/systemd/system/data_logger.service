@@ -4,7 +4,7 @@ Description=Datalogger for AECloud
 [Service]
 Type=simple
 User=root
-ExecStart=/usr/local/bin/data_logger
+ExecStart=/usr/bin/data_logger
 Restart=always
 RestartSec=10
 
