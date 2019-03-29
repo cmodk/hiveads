@@ -5,9 +5,9 @@ rm -rf $WD
 mkdir -p $WD
 cd $WD
 
-git clone git@github.com:cmodk/hiveads.git
+git clone git@github.com:cmodk/hiveads.git || exit
 cd hiveads
-git submodule update --init
+git submodule update --init || exit
 source version.sh
 
 BUILD_NUMBER=$((BUILD_NUMBER+1))
