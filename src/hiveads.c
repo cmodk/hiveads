@@ -11,17 +11,13 @@
 #include <devicehive.h>
 #include <debug.h>
 
+#define LOG_INTERVAL 10000
 #define ADS_REPLY_MAX (1024*1024)
 
 int do_run;
 int debug=0;
 int dlmq;
 int dhmq;
-
-typedef struct {
-	char icao[1024];
-	char guid[1024];
-} aircraft_t;
 
 typedef enum{
 	ADS_UNKNOWN,
@@ -32,9 +28,12 @@ typedef enum{
 typedef struct{
 	char *stream;
 	ads_data_type_t type;
+  double gain;
+  double offset;
 
   char value_str[1024];
   double value;
+  long long timestamp;
 
 }ads_data_t;
 
@@ -63,6 +62,14 @@ ads_data_t stream_map[22]={
 	{"",ADS_UNKNOWN}
 };
 
+typedef struct {
+	char icao[1024];
+	char guid[1024];
+  ads_data_t map[22];
+} aircraft_t;
+
+
+
 int tokenize(char *instr, char ***sepstr, char delim) {
 	int nr_tokens = 0;
 	char *ptr;
@@ -83,10 +90,12 @@ int tokenize(char *instr, char ***sepstr, char delim) {
 	return nr_tokens;
 }			    
 
-int send_double_value(char *icao_number, char *stream, long long timestamp, char *value_str){
+int send_double_value(char *icao_number, ads_data_t *map, long long timestamp, char *value_str){
 
-	double value;
+  int retval;
 	char device_name[1024];
+  double new_value;
+
 
 	if(icao_number==NULL || strlen(icao_number)==0){
 		debug_printf("Missing icao_number\n");
@@ -94,16 +103,28 @@ int send_double_value(char *icao_number, char *stream, long long timestamp, char
 	}
 
 	if(value_str==NULL || strlen(value_str)==0){
-		debug_printf("Missing value string\n");
+		debug_printf("Missing value string: %s -> %s\n",icao_number,map->stream);
 		return -1;
 	}
 
-	value=atof(value_str);
+	new_value=atof(value_str);
+
+  if(map->value == new_value) {
+    printf("Skipping same value for %s\n",map->stream);
+    return 0;
+  }
 
 
 	sprintf(device_name,"ICAO%s",icao_number);
+  debug_printf("Sending double value: %s -> %s -> %f\n",icao_number,map->stream,map->value);
 
-	return log_double(dlmq, device_name,stream,timestamp,value);
+	if(retval=log_double(dlmq, device_name,map->stream,timestamp,new_value) != 0) {
+    debug_printf("Error logging data\n");
+    return retval;
+  }
+
+  map->value=new_value;
+  map->timestamp=timestamp;
 
 }
 
@@ -121,6 +142,7 @@ int send_string_value(char *icao_number, char *stream, long long timestamp, char
   }
 	
 	sprintf(device_name,"ICAO%s",icao_number);
+  debug_printf("Sending string value: %s -> %s -> %s\n",icao_number,stream,value_str);
 
   return log_string(dlmq,device_name,stream,timestamp,value_str);
 
@@ -146,7 +168,7 @@ void trim_string(char *str, char *trimmed) {
 
 int main(int argc , char *argv[])
 {
-	aircraft_t known_aircrafts[1000];
+	aircraft_t *known_aircrafts=(aircraft_t *)calloc(sizeof(aircraft_t),10000);
 	int num_aircrafts=0,aircraft_known;
 	int sock,retval,i,j;
 	struct sockaddr_in server;
@@ -155,9 +177,11 @@ int main(int argc , char *argv[])
 	int num_ads_data;
 	char guid[1024];
 	int ads_offset=0;
-	long long timestamp;
+	long long timestamp,delta;
   char trimmed[1024];
   int read_retry_count=0;
+  double new_value;
+  aircraft_t *aircraft=NULL;
 
 	dlmq = data_logger_mq_init();
 	if(dlmq==-1){
@@ -211,8 +235,6 @@ int main(int argc , char *argv[])
 		}
     read_retry_count=0;
 		timestamp=getTimestampMs(NULL);
-
-
 		debug_printf("Server reply(%d) : %s\n", retval,server_reply);
 		num_ads_data=tokenize(server_reply,&ads_data,',');
 		debug_printf("Num ads data: %d\n",num_ads_data);
@@ -231,6 +253,7 @@ int main(int argc , char *argv[])
 					aircraft_known=0;
 					for(j=0;j<num_aircrafts;j++){
 						if(strcmp(known_aircrafts[j].icao,guid) == 0){
+              aircraft=&(known_aircrafts[j]);
 							aircraft_known=1;
 							break;
 						}
@@ -242,36 +265,64 @@ int main(int argc , char *argv[])
 						sprintf(known_aircrafts[num_aircrafts].guid,"ICAO%s",guid);
 
 						if(device_register(known_aircrafts[num_aircrafts].guid)==0){
+              aircraft=&(known_aircrafts[num_aircrafts]);
+              printf("Adding new aircraft: %s\n",guid);
+              memcpy(aircraft->map,stream_map,sizeof(stream_map));
 							num_aircrafts++;
 						}
 					}
 				}
 
+        if(aircraft==NULL){
+          printf("No aircraft, skipping\n");
+          continue;
+        }
 
+        debug_printf("Looping data for %s\n",aircraft->icao);
 				for(j=0;j<22;j++){
-					//printf("Map: %s\n",stream_map[i].stream);
-					if(strlen(stream_map[j].stream)!=0){
-						debug_printf("%i: %s: %s\n",i,stream_map[j].stream, ads_data[j]);
+          if(*(ads_data[j])==NULL){
+//                debug_printf("Empty ads_data\n");
+                continue;
+          }
+
+//					debug_printf("Map: %s\n",aircraft->map[i].stream);
+/*					if(strlen(aircraft->map[j].stream)!=0){
+						debug_printf("%i: %s: '%s'\n",i,aircraft->map[j].stream, ads_data[j]);
 					}else{
 						debug_printf("%i: %s\n",i,ads_data[j]);
 					}
-					//printf("Type: %d\n",stream_map[i].type);
-					switch(stream_map[j].type){
+          */
+	//				debug_printf("Type: %d\n",aircraft->map[i].type);
+					switch(aircraft->map[j].type){
 						case ADS_FLOAT:
-							send_double_value(guid,stream_map[j].stream,timestamp,ads_data[j]);
+              delta=timestamp - aircraft->map[j].timestamp;
+              if(delta < LOG_INTERVAL) {
+                debug_printf("Skipping log of %s: %lld - %lld -> %lld\n",
+                    aircraft->map[j].stream,
+                    timestamp,
+                    aircraft->map[j].timestamp,
+                    delta);
+                continue;
+              }
+                send_double_value(guid,&(aircraft->map[j]),timestamp,ads_data[j]);
 							break;
             case ADS_STRING:
-              if(ads_data[i]==NULL)
-                continue;
-
+              
               trim_string(ads_data[j],trimmed);
               if(strlen(trimmed)!=0) {
-                printf("%s -> %s -> '%s'\n",guid, stream_map[j].stream, trimmed);
-                if(strcmp(stream_map[j].value_str,trimmed)==0){
+                printf("%s -> %s -> '%s'\n",guid, aircraft->map[j].stream, trimmed);
+                if(strcmp(aircraft->map[j].value_str,trimmed)==0){
                   print_info("Ignoring.. already sent\n");
                 }else{
-                  send_string_value(guid, stream_map[j].stream, timestamp, trimmed);
-                  sprintf(stream_map[j].value_str,"%s",trimmed);
+                  if(strcmp(aircraft->map[j].value_str,trimmed) == 0) {
+                    debug_printf("Skip already known aircraft number\n");
+                    continue;
+                  }
+                  if(send_string_value(guid, aircraft->map[j].stream, timestamp, trimmed) == 0){
+                    sprintf(aircraft->map[j].value_str,"%s",trimmed);
+                    aircraft->map[j].timestamp=timestamp;
+                  }
+                  sprintf(aircraft->map[j].value_str,"%s",trimmed);
                 }
               }
               break;
