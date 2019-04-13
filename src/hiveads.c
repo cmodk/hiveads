@@ -10,6 +10,7 @@
 #include <data_logger.h>
 #include <devicehive.h>
 #include <debug.h>
+#include <math.h>
 
 #define LOG_INTERVAL 10000
 #define ADS_REPLY_MAX (1024*1024)
@@ -38,28 +39,28 @@ typedef struct{
 }ads_data_t;
 
 ads_data_t stream_map[22]={
-	{"",ADS_UNKNOWN},
-	{"",ADS_UNKNOWN},
-	{"",ADS_UNKNOWN},
-	{"",ADS_UNKNOWN},
-	{"",ADS_UNKNOWN},
-	{"",ADS_UNKNOWN},
-	{"",ADS_UNKNOWN},
-	{"",ADS_UNKNOWN},
-	{"",ADS_UNKNOWN},
-	{"",ADS_UNKNOWN},
-	{"flight.number",ADS_STRING},
-	{"flight.altitude",ADS_FLOAT},
-	{"flight.speed",ADS_FLOAT},
-	{"flight.groundtrack",ADS_FLOAT},
-	{"loc.latitude",ADS_FLOAT},
-	{"loc.longitude",ADS_FLOAT},
-	{"",ADS_UNKNOWN},
-	{"",ADS_UNKNOWN},
-	{"",ADS_UNKNOWN},
-	{"",ADS_UNKNOWN},
-	{"",ADS_UNKNOWN},
-	{"",ADS_UNKNOWN}
+	{"",ADS_UNKNOWN,NAN,NAN},
+	{"",ADS_UNKNOWN,NAN,NAN},
+	{"",ADS_UNKNOWN,NAN,NAN},
+	{"",ADS_UNKNOWN,NAN,NAN},
+	{"",ADS_UNKNOWN,NAN,NAN},
+	{"",ADS_UNKNOWN,NAN,NAN},
+	{"",ADS_UNKNOWN,NAN,NAN},
+	{"",ADS_UNKNOWN,NAN,NAN},
+	{"",ADS_UNKNOWN,NAN,NAN},
+	{"",ADS_UNKNOWN,NAN,NAN},
+	{"flight.number",ADS_STRING,NAN,NAN},
+	{"flight.altitude",ADS_FLOAT,0.3048,0.0},
+	{"flight.speed",ADS_FLOAT,0.51444444,0.0},
+	{"flight.groundtrack",ADS_FLOAT,NAN,NAN},
+	{"loc.latitude",ADS_FLOAT,NAN,NAN},
+	{"loc.longitude",ADS_FLOAT,NAN,NAN},
+	{"",ADS_UNKNOWN,NAN,NAN},
+	{"",ADS_UNKNOWN,NAN,NAN},
+	{"",ADS_UNKNOWN,NAN,NAN},
+	{"",ADS_UNKNOWN,NAN,NAN},
+	{"",ADS_UNKNOWN,NAN,NAN},
+	{"",ADS_UNKNOWN,NAN,NAN}
 };
 
 typedef struct {
@@ -108,6 +109,14 @@ int send_double_value(char *icao_number, ads_data_t *map, long long timestamp, c
 	}
 
 	new_value=atof(value_str);
+  
+  if(!isnan(map->gain)) {
+    new_value*=map->gain;
+  }
+
+  if(!isnan(map->offset)) {
+    new_value+=map->gain;
+  }
 
   if(map->value == new_value) {
     printf("Skipping same value for %s\n",map->stream);
