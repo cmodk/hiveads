@@ -12,7 +12,7 @@ source version.sh
 
 BUILD_NUMBER=$((BUILD_NUMBER+1))
 
-echo "Creating package $MAJOR.$MINOR-$BUILD_NUMBER.$MINOR-$BUILD_NUMBER.$MINOR-$BUILD_NUMBER.$MINOR-$BUILD_NUMBER"
+echo "Creating package $MAJOR.$MINOR-$BUILD_NUMBER"
 
 ./autogen.sh
 make clean || exit
