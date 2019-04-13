@@ -119,7 +119,7 @@ int send_double_value(char *icao_number, ads_data_t *map, long long timestamp, c
   }
 
   if(map->value == new_value) {
-    printf("Skipping same value for %s\n",map->stream);
+    debug_printf("Skipping same value for %s\n",map->stream);
     return 0;
   }
 
@@ -319,9 +319,9 @@ int main(int argc , char *argv[])
               
               trim_string(ads_data[j],trimmed);
               if(strlen(trimmed)!=0) {
-                printf("%s -> %s -> '%s'\n",guid, aircraft->map[j].stream, trimmed);
+                debug_printf("%s -> %s -> '%s'\n",guid, aircraft->map[j].stream, trimmed);
                 if(strcmp(aircraft->map[j].value_str,trimmed)==0){
-                  print_info("Ignoring.. already sent\n");
+                  debug_printf("Ignoring.. already sent\n");
                 }else{
                   if(strcmp(aircraft->map[j].value_str,trimmed) == 0) {
                     debug_printf("Skip already known aircraft number\n");
